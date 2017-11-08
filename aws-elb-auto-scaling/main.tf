@@ -19,11 +19,9 @@ resource "aws_key_pair" "myawskeypair" {
     public_key = "${file("${var.key_path}")}"
 }
 
-data "aws_availability_zones" "allzones" {}
-
 resource "aws_autoscaling_group" "scalegroup" {
     launch_configuration = "${aws_launch_configuration.webcluster.name}"
-    availability_zones = ["${data.aws_availability_zones.allzones.names}"]
+    availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
     min_size = 1
     max_size = 4
     enabled_metrics = ["GroupMinSize", "GroupMaxSize", "GroupDesiredCapacity", "GroupInServiceInstances", "GroupTotalInstances"]
@@ -93,10 +91,10 @@ resource "aws_cloudwatch_metric_alarm" "cpualarm-down" {
 resource "aws_security_group" "websg" {
     name = "security_group_for_web_server"
     ingress {
-    from_port = 80
-    to_port = 80
-    protocol = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+        from_port = 80
+        to_port = 80
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
     }
 
     lifecycle {
@@ -110,7 +108,7 @@ resource "aws_security_group_rule" "ssh" {
     from_port = 22
     to_port = 22
     protocol = "tcp"
-    cidr_blocks = ["60.242.xxx.xxx/32"]
+    cidr_blocks = ["0.0.0.0/0"]
 }
 
 resource "aws_security_group" "elbsg" {
@@ -136,14 +134,8 @@ resource "aws_security_group" "elbsg" {
 
 resource "aws_elb" "elb1" {
     name = "terraform-elb"
-    availability_zones = ["${data.aws_availability_zones.allzones.names}"]
+    availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
     security_groups = ["${aws_security_group.elbsg.id}"]
-
-    access_logs {
-        bucket = "elb-log.davidwzhang.com"
-        bucket_prefix = "elb"
-        interval = 5
-    }
 
     listener {
         instance_port = 80
@@ -178,7 +170,7 @@ resource "aws_lb_cookie_stickiness_policy" "cookie_stickness" {
 }
 
 output "availabilityzones" {
-    value = ["${data.aws_availability_zones.allzones.names}"]
+    value = ["us-east-1a", "us-east-1b", "us-east-1c"]
 }
 
 output "elb-dns" {

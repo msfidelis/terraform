@@ -30,7 +30,7 @@ resource "aws_autoscaling_group" "scalegroup" {
     health_check_type="ELB"
     tag {
         key = "Name"
-        value = "terraform-asg-example"
+        value = "webserver000"
         propagate_at_launch = true
     }
 }
@@ -93,6 +93,13 @@ resource "aws_security_group" "websg" {
     ingress {
         from_port = 80
         to_port = 80
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    egress {
+        from_port = 0
+        to_port = 65535
         protocol = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
     }

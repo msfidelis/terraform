@@ -27,3 +27,7 @@ sudo pip install ansible
 terraform init 
 terraform apply
 ```
+
+## Blog Posts
+
+* [[PT-BR] Realizando deploys automatizados de instâncias EC2 com Load Balancer na AWS com Terraform](http://www.nanoshots.com.br/2017/11/realizando-deploys-automatizados-de.html) 

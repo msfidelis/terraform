@@ -13,7 +13,9 @@ variable "webapp_instance_type" {
 # Instances Security Group 
 resource "aws_security_group" "webapp_sg" {
 
-    name = "webapp_sg"
+    name        = "webapp_sg"
+    description = "Security Group for EC2 instances"
+    vpc_id      = "${aws_vpc.vpc_elb.id}"
 
     ingress {
         from_port = 80

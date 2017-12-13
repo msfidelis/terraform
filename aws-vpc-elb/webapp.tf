@@ -1,0 +1,146 @@
+# EC2 AMI
+variable "webapp_ami" {
+  description = "Amazon Linux"
+  default = "ami-8c1be5f6"
+}
+
+# EC2 Type
+variable "webapp_instance_type" {
+  description = "EC2 instance type"
+  default = "t2.micro"
+}
+
+# Instances Security Group 
+resource "aws_security_group" "webapp_sg" {
+
+    name = "webapp_sg"
+
+    ingress {
+        from_port = 80
+        to_port = 80
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    ingress {
+        from_port = 22
+        to_port = 22
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }    
+
+    egress {
+        from_port = 0
+        to_port = 65535
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    lifecycle {
+        create_before_destroy = true
+    }
+}
+
+# ELB Security Group 
+resource "aws_security_group" "webapp_sg_elb" {
+
+    name        = "webapp_sg_elb"
+    description = "ELB Security Group for WebApp"
+
+    vpc_id = "${aws_vpc.vpc_elb.id}"
+
+    # HTTP access from anywhere
+    ingress {
+        from_port   = 80
+        to_port     = 80
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    # outbound internet access
+    egress {
+        from_port   = 0
+        to_port     = 0
+        protocol    = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    # ensure the VPC has an Internet gateway or this step will fail
+    depends_on = ["aws_internet_gateway.gw"]
+
+    lifecycle {
+        create_before_destroy = true
+    }
+}
+
+# Webapp Elastic Load Balancer
+resource "aws_elb" "webapp_elb" {
+
+    name = "webapp"
+
+    # Public Subnet. The same availability zone as our instance.
+    subnets = ["${aws_subnet.public_subnet_us_east_1a.id}"]
+
+    security_groups = ["${aws_security_group.webapp_sg_elb.id}"]
+
+    # HTTP Listener on port 80 to port 80
+    listener {
+        lb_port           = 80
+        lb_protocol       = "http"
+        instance_port     = 80
+        instance_protocol = "http"
+    }
+ 
+    # ELB Instance http healthcheck
+    health_check {
+        healthy_threshold   = 2
+        unhealthy_threshold = 2
+        timeout             = 3
+        target              = "HTTP:80/"
+        interval            = 30
+    }
+
+    # The instance is registered automatically
+    cross_zone_load_balancing   = true
+    idle_timeout                = 400
+    connection_draining         = true
+    connection_draining_timeout = 400
+}
+
+
+# Launch Configuration 
+resource "aws_launch_configuration" "webapp_lcfg" {
+
+    image_id=  "${var.webapp_ami}"
+    instance_type = "${var.webapp_instance_type}"
+    security_groups = ["${aws_security_group.webapp_sg.id}"]
+    key_name = "${aws_key_pair.vpc_terraform_key.key_name}"
+
+    user_data = "${file("user-data/bootstrap.sh")}"
+
+    lifecycle {
+        create_before_destroy = true
+    }
+}
+
+# Auto Scaling Group
+resource "aws_autoscaling_group" "webapp_scalegroup" {
+
+    launch_configuration = "${aws_launch_configuration.webapp_lcfg.name}"
+    vpc_zone_identifier  = ["${aws_subnet.public_subnet_us_east_1a.id}"]
+    min_size = 2
+    max_size = 4
+
+    enabled_metrics = ["GroupMinSize", "GroupMaxSize", "GroupDesiredCapacity", "GroupInServiceInstances", "GroupTotalInstances"]
+    metrics_granularity="1Minute"
+    load_balancers= ["${aws_elb.webapp_elb.id}"]
+    
+    health_check_type="ELB"
+
+    tag {
+        key = "Name"
+        value = "webapp_scalegroup"
+        propagate_at_launch = true
+    }
+
+}

@@ -80,8 +80,12 @@ resource "aws_elb" "webapp_elb" {
 
     name = "webapp"
 
-    # Public Subnet. The same availability zone as our instance.
-    subnets = ["${aws_subnet.public_subnet_us_east_1a.id}"]
+    # Public Subnets. The same availability zone as our instance.
+    subnets = [
+        "${aws_subnet.public_subnet_us_east_1a.id}", 
+        "${aws_subnet.public_subnet_us_east_1b.id}",
+        "${aws_subnet.public_subnet_us_east_1c.id}"
+        ]
 
     security_groups = ["${aws_security_group.webapp_sg_elb.id}"]
 
@@ -97,7 +101,7 @@ resource "aws_elb" "webapp_elb" {
     health_check {
         healthy_threshold   = 2
         unhealthy_threshold = 2
-        timeout             = 3
+        timeout             = 10
         target              = "HTTP:80/"
         interval            = 30
     }
@@ -157,7 +161,7 @@ resource "aws_autoscaling_group" "webapp_scalegroup" {
 # Auto Scaling Policy UP + 2
 resource "aws_autoscaling_policy" "autopolicy-up" {
     name = "terraform-autoplicy"
-    scaling_adjustment = 1
+    scaling_adjustment = 2
     adjustment_type = "ChangeInCapacity"
     cooldown = 300
     autoscaling_group_name = "${aws_autoscaling_group.webapp_scalegroup.name}"

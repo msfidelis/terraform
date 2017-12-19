@@ -116,8 +116,8 @@ resource "aws_elb" "webapp_elb" {
 
 # Launch Configuration 
 resource "aws_launch_configuration" "webapp_lcfg" {
-
-    image_id=  "${var.webapp_ami}"
+    name = "webapp-config" 
+    image_id =  "${var.webapp_ami}"
     instance_type = "${var.webapp_instance_type}"
     security_groups = ["${aws_security_group.webapp_sg.id}"]
     key_name = "${aws_key_pair.vpc_terraform_key.key_name}"
@@ -132,6 +132,7 @@ resource "aws_launch_configuration" "webapp_lcfg" {
 # Auto Scaling Group
 resource "aws_autoscaling_group" "webapp_scalegroup" {
 
+    name = "webapp-asg"
     launch_configuration = "${aws_launch_configuration.webapp_lcfg.name}"
 
     # Launch on Multi-AZ

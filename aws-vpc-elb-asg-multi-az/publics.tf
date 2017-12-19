@@ -19,7 +19,7 @@ resource "aws_route_table_association" "public_subnet_us_east_1a_association" {
 # Public Subnet 2 on us-east-1b
 resource "aws_subnet" "public_subnet_us_east_1b" {
   vpc_id                  = "${aws_vpc.vpc_elb.id}"
-  cidr_block              = "172.31.3.0/24"
+  cidr_block              = "172.31.2.0/24"
   map_public_ip_on_launch = true
   availability_zone = "us-east-1b"
   tags = {
@@ -36,7 +36,7 @@ resource "aws_route_table_association" "public_subnet_us_east_1b_association" {
 # Public Subnet 3 on us-east-1c
 resource "aws_subnet" "public_subnet_us_east_1c" {
   vpc_id                  = "${aws_vpc.vpc_elb.id}"
-  cidr_block              = "172.31.4.0/24"
+  cidr_block              = "172.31.3.0/24"
   map_public_ip_on_launch = true
   availability_zone = "us-east-1c"
   tags = {

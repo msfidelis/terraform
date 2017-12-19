@@ -141,8 +141,8 @@ resource "aws_autoscaling_group" "webapp_scalegroup" {
         "${aws_subnet.public_subnet_us_east_1c.id}"
         ]
 
-    min_size = 2
-    max_size = 4
+    min_size = 3
+    max_size = 10
 
     enabled_metrics = ["GroupMinSize", "GroupMaxSize", "GroupDesiredCapacity", "GroupInServiceInstances", "GroupTotalInstances"]
     metrics_granularity="1Minute"

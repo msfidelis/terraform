@@ -43,6 +43,8 @@ resource "aws_instance" "node" {
     instance_type = "${var.example_instance_type}"
     key_name = "${aws_key_pair.vpc_dbs_key.key_name}"
     vpc_security_group_ids = ["${aws_security_group.example_sg.id}"] 
+
+    user_data = "${file("user-data/bootstrap.sh")}"
     
     subnet_id = "${aws_subnet.public_subnet_us_east_1a.id}"
 

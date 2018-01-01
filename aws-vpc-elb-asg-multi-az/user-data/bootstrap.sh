@@ -8,6 +8,7 @@ sudo su ec2-user
 cd ~
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.6/install.sh | bash
 chmod +x /.nvm/nvm.sh
+bash
 . /.nvm/nvm.sh
 nvm install 8.0.0
 

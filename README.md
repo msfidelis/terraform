@@ -2,7 +2,7 @@
 
 ## Install guide
 
-### Macos
+### MacOs
 
 ```bash
 brew install terraform
